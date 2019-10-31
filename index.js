@@ -36,21 +36,30 @@ var googleAuth = (function () {
     this.isAuthorized = false
     this.isInit = false
     this.prompt = null
+    this.config = {}
+  
     this.isLoaded = function () {
       /* eslint-disable */
       console.warn('isLoaded() will be deprecated. You can use "this.$gAuth.isInit"')
       return !!this.GoogleAuth
     };
+    
+    this.init(config, prompt) => {
+      this.prompt = prompt
+      this.config = config
+      if(config.autoload) {
+        this.load()  
+      }  
+    }
 
-    this.load = (config, prompt) => {
+    this.load = () => {
       installClient()
         .then(() => {
-          return initClient(config)
+          return initClient(this.config)
         })
         .then((gapi) => {
           this.GoogleAuth = gapi.auth2.getAuthInstance()
           this.isInit = true
-          this.prompt = prompt
           this.isAuthorized = this.GoogleAuth.isSignedIn.get()
         })
     };
@@ -125,7 +134,7 @@ function installGoogleAuthPlugin(Vue, options) {
   /* eslint-disable */
   //set config
   let GoogleAuthConfig = null
-  let GoogleAuthDefaultConfig = { scope: 'profile email', discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'] }
+  let GoogleAuthDefaultConfig = { scope: 'profile email', discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'], autoload: true }
   let prompt = 'select_account'
   if (typeof options === 'object') {
     GoogleAuthConfig = Object.assign(GoogleAuthDefaultConfig, options)
